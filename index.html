@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQLDelight — Guide Complet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep:    #0a0612;
+    --bg:      #0f0a1a;
+    --surface: #160f26;
+    --card:    #1d1535;
+    --border:  #2d2050;
+    --accent1: #9b5de5;
+    --accent2: #c77dff;
+    --accent3: #e0aaff;
+    --mint:    #00f5c0;
+    --pink:    #f72585;
+    --text:    #e8deff;
+    --muted:   #8b7ab8;
+    --dim:     #4a3d6e;
+    --code-bg: #100c1f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ─────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,6,18,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.3rem;
+    color: var(--accent2);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--mint); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 0.9rem;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--accent3); }
+  .nav-cta {
+    background: var(--accent1); color: #fff;
+    border: none; padding: 0.5rem 1.25rem; border-radius: 8px;
+    font-family: 'DM Sans'; font-size: 0.9rem; font-weight: 500;
+    cursor: pointer; text-decoration: none;
+    transition: background .2s, transform .1s;
+  }
+  .nav-cta:hover { background: var(--accent2); transform: translateY(-1px); }
+
+  /* ── HERO ────────────────────────────── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 800px 500px at 50% 0%, rgba(155,93,229,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 80% 60%, rgba(199,125,255,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 300px 200px at 20% 70%, rgba(0,245,192,0.05) 0%, transparent 60%);
+  }
+
+  /* grid overlay */
+  .hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.25;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black, transparent);
+  }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(155,93,229,0.15);
+    border: 1px solid rgba(155,93,229,0.35);
+    color: var(--accent3); font-size: 0.8rem; font-weight: 500;
+    padding: 0.35rem 0.9rem; border-radius: 999px;
+    margin-bottom: 1.5rem; position: relative; z-index: 1;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .tag-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--mint); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    position: relative; z-index: 1;
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 .line1 { display: block; color: var(--text); }
+  .hero h1 .line2 {
+    display: block;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2), var(--mint));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-sub {
+    font-size: 1.15rem; color: var(--muted); max-width: 580px;
+    position: relative; z-index: 1; margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  .hero-btns {
+    display: flex; gap: 1rem; position: relative; z-index: 1;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    color: #fff; text-decoration: none;
+    padding: 0.8rem 2rem; border-radius: 10px;
+    font-weight: 500; font-size: 1rem;
+    transition: opacity .2s, transform .15s;
+    box-shadow: 0 4px 30px rgba(155,93,229,0.35);
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
+  .btn-ghost {
+    border: 1px solid var(--border); color: var(--accent3);
+    text-decoration: none; padding: 0.8rem 2rem; border-radius: 10px;
+    font-weight: 500; font-size: 1rem;
+    transition: border-color .2s, background .2s, transform .15s;
+  }
+  .btn-ghost:hover {
+    border-color: var(--accent1);
+    background: rgba(155,93,229,0.1);
+    transform: translateY(-2px);
+  }
+
+  .hero-stats {
+    display: flex; gap: 3rem; margin-top: 4rem;
+    position: relative; z-index: 1;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem; font-weight: 800;
+    color: var(--accent2);
+  }
+  .stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ── SECTIONS COMMON ─────────────────── */
+  section { padding: 6rem 2rem; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--mint); font-weight: 500; margin-bottom: 0.75rem;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.02em; margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .section-sub { color: var(--muted); max-width: 560px; font-size: 1.05rem; }
+
+  /* ── WHAT IS ──────────────────────────── */
+  #what { background: var(--surface); }
+  .what-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+    align-items: center; margin-top: 3rem;
+  }
+  .what-text p { color: var(--muted); margin-bottom: 1rem; }
+  .what-text p strong { color: var(--accent3); font-weight: 500; }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+  .pill {
+    background: rgba(155,93,229,0.12); border: 1px solid rgba(155,93,229,0.3);
+    color: var(--accent3); padding: 0.3rem 0.85rem; border-radius: 999px; font-size: 0.82rem;
+  }
+
+  /* ── CODE BLOCK ──────────────────────── */
+  .code-card {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+  }
+  .code-header {
+    background: rgba(45,32,80,0.7);
+    padding: 0.6rem 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; }
+  .dot.y { background: #febc2e; }
+  .dot.g { background: #28c840; }
+  .code-filename { margin-left: auto; color: var(--dim); font-size: 0.75rem; }
+  .code-body { padding: 1.25rem 1.5rem; overflow-x: auto; line-height: 1.8; }
+  pre { white-space: pre; }
+
+  /* Syntax colors */
+  .kw  { color: #c77dff; }
+  .fn  { color: #90e0ef; }
+  .str { color: #a8dadc; }
+  .cmt { color: #4a3d6e; font-style: italic; }
+  .num { color: #ffd6a5; }
+  .typ { color: #f8961e; }
+  .var { color: var(--text); }
+  .ann { color: #80ffdb; }
+  .op  { color: #f72585; }
+
+  /* annotation lines */
+  .annot {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    margin-top: 0.75rem; padding: 0.65rem 1rem;
+    background: rgba(155,93,229,0.07); border-left: 2px solid var(--accent1);
+    border-radius: 0 8px 8px 0;
+  }
+  .annot-num {
+    background: var(--accent1); color: #fff;
+    font-family: 'JetBrains Mono'; font-size: 0.7rem; font-weight: 700;
+    min-width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .annot p { color: var(--muted); font-size: 0.88rem; }
+  .annot p strong { color: var(--accent3); font-weight: 500; }
+
+  /* ── CONCEPTS ─────────────────────────── */
+  #concepts { background: var(--bg); }
+  .concepts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.75rem;
+    transition: border-color .2s, transform .2s;
+  }
+  .concept-card:hover {
+    border-color: var(--accent1); transform: translateY(-3px);
+  }
+  .concept-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .icon-purple { background: rgba(155,93,229,0.18); }
+  .icon-mint   { background: rgba(0,245,192,0.12); }
+  .icon-pink   { background: rgba(247,37,133,0.12); }
+  .icon-amber  { background: rgba(255,190,11,0.12); }
+  .concept-card h3 {
+    font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700;
+    color: var(--text); margin-bottom: 0.5rem;
+  }
+  .concept-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+
+  /* ── SETUP ────────────────────────────── */
+  #setup { background: var(--surface); }
+  .steps { display: flex; flex-direction: column; gap: 2.5rem; margin-top: 3rem; }
+  .step {
+    display: grid; grid-template-columns: 56px 1fr; gap: 1.5rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(155,93,229,0.3), rgba(199,125,255,0.1));
+    border: 1px solid var(--accent1);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
+    color: var(--accent2); flex-shrink: 0;
+  }
+  .step-content h3 {
+    font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700;
+    color: var(--text); margin-bottom: 0.5rem;
+  }
+  .step-content p { color: var(--muted); margin-bottom: 0.75rem; font-size: 0.95rem; }
+
+  /* ── QUERIES ──────────────────────────── */
+  #queries { background: var(--bg); }
+  .queries-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem;
+  }
+
+  /* ── MULTIPLATFORM ────────────────────── */
+  #platforms { background: var(--surface); }
+  .platforms-wrap {
+    display: flex; gap: 1.5rem; margin-top: 3rem; flex-wrap: wrap;
+  }
+  .platform-card {
+    flex: 1; min-width: 180px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem; text-align: center;
+    transition: border-color .2s, transform .2s;
+  }
+  .platform-card:hover { border-color: var(--accent1); transform: translateY(-2px); }
+  .platform-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+  .platform-card h4 {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    color: var(--accent3); margin-bottom: 0.4rem;
+  }
+  .platform-card p { color: var(--muted); font-size: 0.82rem; }
+  .platform-badge {
+    display: inline-block; margin-top: 0.75rem;
+    background: rgba(0,245,192,0.1); border: 1px solid rgba(0,245,192,0.3);
+    color: var(--mint); font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 999px;
+  }
+
+  /* ── FULL EXAMPLE ─────────────────────── */
+  #example { background: var(--bg); }
+  .example-wrap { margin-top: 3rem; }
+  .tab-row {
+    display: flex; gap: 0; margin-bottom: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    color: var(--muted); font-family: 'JetBrains Mono'; font-size: 0.82rem;
+    padding: 0.65rem 1.25rem; cursor: pointer;
+    transition: color .2s, border-color .2s;
+    transform: translateY(1px);
+  }
+  .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── FAQ ──────────────────────────────── */
+  #faq { background: var(--surface); }
+  .faq-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 3rem; }
+  .faq-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .faq-q {
+    width: 100%; background: none; border: none;
+    color: var(--text); font-family: 'DM Sans'; font-size: 1rem;
+    font-weight: 500; text-align: left;
+    padding: 1.1rem 1.5rem; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: color .2s;
+  }
+  .faq-q:hover { color: var(--accent3); }
+  .faq-arrow { color: var(--muted); transition: transform .2s; font-size: 1.1rem; }
+  .faq-item.open .faq-arrow { transform: rotate(180deg); color: var(--accent2); }
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    transition: max-height .3s ease, padding .3s;
+    color: var(--muted); font-size: 0.95rem; line-height: 1.7;
+    padding: 0 1.5rem;
+  }
+  .faq-item.open .faq-a { max-height: 400px; padding: 0 1.5rem 1.25rem; }
+  .faq-a code {
+    font-family: 'JetBrains Mono'; font-size: 0.82rem;
+    background: rgba(155,93,229,0.12); color: var(--accent3);
+    padding: 0.1rem 0.4rem; border-radius: 4px;
+  }
+
+  /* ── CTA ──────────────────────────────── */
+  #cta {
+    background: var(--deep); text-align: center;
+    position: relative; overflow: hidden;
+  }
+  #cta::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(155,93,229,0.15) 0%, transparent 70%);
+  }
+  #cta .container { position: relative; z-index: 1; }
+  #cta h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800;
+    color: var(--text); margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  #cta p { color: var(--muted); max-width: 500px; margin: 0 auto 2.5rem; }
+
+  /* ── FOOTER ───────────────────────────── */
+  footer {
+    background: var(--deep); border-top: 1px solid var(--border);
+    text-align: center; padding: 2rem;
+    color: var(--dim); font-size: 0.85rem;
+  }
+  footer a { color: var(--accent1); text-decoration: none; }
+
+  /* ── RESPONSIVE ───────────────────────── */
+  @media (max-width: 768px) {
+    .what-grid { grid-template-columns: 1fr; }
+    .queries-grid { grid-template-columns: 1fr; }
+    .step { grid-template-columns: 44px 1fr; }
+    .nav-links, .nav-cta { display: none; }
+  }
+
+  /* ── SCROLL REVEAL ────────────────────── */
+  .reveal {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── HIGHLIGHT BOX ────────────────────── */
+  .highlight-box {
+    background: rgba(155,93,229,0.08);
+    border: 1px solid rgba(155,93,229,0.25);
+    border-radius: 12px; padding: 1.25rem 1.5rem;
+    margin: 1.25rem 0;
+  }
+  .highlight-box h4 {
+    color: var(--accent3); font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.95rem; margin-bottom: 0.5rem;
+  }
+  .highlight-box p { color: var(--muted); font-size: 0.9rem; }
+
+  /* comparison table */
+  .comp-table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
+  .comp-table th, .comp-table td {
+    padding: 0.8rem 1.2rem; text-align: left;
+    border-bottom: 1px solid var(--border); font-size: 0.9rem;
+  }
+  .comp-table th { color: var(--accent3); font-weight: 500; font-family: 'Syne'; }
+  .comp-table td { color: var(--muted); }
+  .comp-table td:first-child { color: var(--text); font-weight: 500; }
+  .comp-table tr:hover td { background: rgba(155,93,229,0.05); }
+  .yes { color: var(--mint); }
+  .no  { color: var(--pink); }
+  .part { color: #ffd166; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">SQL<span>Delight</span></a>
+    <ul class="nav-links">
+      <li><a href="#what">C'est quoi ?</a></li>
+      <li><a href="#concepts">Concepts</a></li>
+      <li><a href="#setup">Installation</a></li>
+      <li><a href="#queries">Requêtes</a></li>
+      <li><a href="#example">Exemple complet</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a class="nav-cta" href="https://cashapp.github.io/sqldelight/" target="_blank">Docs officielles ↗</a>
+  </div>
+</nav>
+
+<!-- ── HERO ────────────────────────────── -->
+<section class="hero">
+  <div class="hero-tag">
+    <span class="tag-dot"></span>
+    Guide complet · Kotlin Multiplatform
+  </div>
+  <h1>
+    <span class="line1">Maîtrise SQLDelight</span>
+    <span class="line2">de zéro à expert</span>
+  </h1>
+  <p class="hero-sub">
+    SQLDelight transforme tes fichiers <strong>.sq</strong> en code Kotlin typé et sûr.
+    Fini les erreurs de typo dans tes requêtes SQL — le compilateur te protège.
+  </p>
+  <div class="hero-btns">
+    <a href="#what" class="btn-primary">Commencer ici</a>
+    <a href="#example" class="btn-ghost">Voir l'exemple complet</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">2.0</div><div class="stat-label">Version actuelle</div></div>
+    <div class="stat"><div class="stat-num">6+</div><div class="stat-label">Plateformes</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Type-safe</div></div>
+    <div class="stat"><div class="stat-num">KMP</div><div class="stat-label">Kotlin Multiplatform</div></div>
+  </div>
+</section>
+
+<!-- ── WHAT IS ──────────────────────────── -->
+<section id="what">
+  <div class="container">
+    <p class="section-label reveal">Définition</p>
+    <h2 class="section-title reveal">C'est quoi SQLDelight ?</h2>
+    <div class="what-grid">
+      <div class="what-text reveal">
+        <p>
+          SQLDelight est un <strong>générateur de code</strong> créé par Cash App (Square).
+          Tu écris tes requêtes SQL dans des fichiers <strong>.sq</strong>, et SQLDelight
+          génère automatiquement du code Kotlin entièrement typé.
+        </p>
+        <p>
+          Fini les <strong>strings SQL hardcodées</strong> qui crashent en prod.
+          Fini les <strong>Cursor.getString(0)</strong> à la main.
+          SQLDelight lit ton schéma et crée des fonctions Kotlin qui retournent
+          directement tes data classes.
+        </p>
+        <p>
+          Le gros avantage : c'est du <strong>Kotlin Multiplatform (KMP)</strong>.
+          Le même code SQL tourne sur Android, iOS, Desktop et le Web.
+        </p>
+        <div class="pill-row">
+          <span class="pill">Android</span>
+          <span class="pill">iOS (Native)</span>
+          <span class="pill">JVM/Desktop</span>
+          <span class="pill">JavaScript</span>
+          <span class="pill">WASM</span>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span class="code-filename">User.sq</span>
+          </div>
+          <div class="code-body">
+<pre><span class="cmt">-- Tu écris du SQL normal</span>
+<span class="kw">CREATE TABLE</span> User (
+  id        <span class="typ">INTEGER</span> <span class="kw">NOT NULL PRIMARY KEY</span>,
+  username  <span class="typ">TEXT</span> <span class="kw">NOT NULL</span>,
+  email     <span class="typ">TEXT</span> <span class="kw">NOT NULL</span>
+);
+
+<span class="fn">selectAll</span>:
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> User;</pre>
+          </div>
+        </div>
+        <div style="text-align:center; margin: 0.75rem 0; color: var(--muted); font-size: 0.85rem;">
+          ↓ SQLDelight génère automatiquement
+        </div>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span class="code-filename">UserQueries.kt (généré)</span>
+          </div>
+          <div class="code-body">
+<pre><span class="cmt">// Ce code est généré — tu ne le touches pas</span>
+<span class="kw">fun</span> <span class="fn">selectAll</span>(): <span class="typ">Query</span>&lt;<span class="typ">User</span>&gt; { <span class="cmt">...</span> }
+
+<span class="cmt">// Utilisation dans ton code</span>
+<span class="kw">val</span> <span class="var">users</span> = db.userQueries
+  .<span class="fn">selectAll</span>()
+  .<span class="fn">executeAsList</span>()
+<span class="cmt">// users: List&lt;User&gt; ✅ Typé !</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box reveal" style="margin-top:2.5rem;">
+      <h4>💡 Comparaison avec Room (Android)</h4>
+      <p>Room et SQLDelight font des choses similaires, mais SQLDelight fonctionne sur toutes les plateformes Kotlin (KMP), pas seulement Android. Room reste plus simple pour un projet purement Android. SQLDelight brille dès que tu veux partager ta couche données entre Android et iOS.</p>
+    </div>
+
+    <table class="comp-table reveal">
+      <thead>
+        <tr>
+          <th>Critère</th>
+          <th>SQLDelight</th>
+          <th>Room</th>
+          <th>Exposed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Kotlin Multiplatform</td><td class="yes">✓ Oui</td><td class="no">✗ Android uniquement</td><td class="part">~ JVM seulement</td></tr>
+        <tr><td>Type safety</td><td class="yes">✓ Compilateur SQL</td><td class="yes">✓ Annotations</td><td class="yes">✓ DSL Kotlin</td></tr>
+        <tr><td>SQL explicite</td><td class="yes">✓ Fichiers .sq</td><td class="part">~ @Query("...")</td><td class="no">✗ DSL abstrait</td></tr>
+        <tr><td>Migrations</td><td class="yes">✓ .sqm automatiques</td><td class="yes">✓ Manuelles</td><td class="part">~ Manuelles</td></tr>
+        <tr><td>Flow / reactive</td><td class="yes">✓ Natif</td><td class="yes">✓ LiveData/Flow</td><td class="no">✗ Non natif</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── CONCEPTS ─────────────────────────── -->
+<section id="concepts">
+  <div class="container">
+    <p class="section-label reveal">Comprendre</p>
+    <h2 class="section-title reveal">Les concepts clés</h2>
+    <p class="section-sub reveal">Avant de coder, comprends ces 4 piliers. Tout le reste en découle.</p>
+    <div class="concepts-grid">
+      <div class="concept-card reveal">
+        <div class="concept-icon icon-purple">🗂️</div>
+        <h3>Fichiers .sq</h3>
+        <p>Tu écris ton schéma SQL (CREATE TABLE) et tes requêtes nommées dans des fichiers <code>.sq</code>. Un fichier par table, rangé dans <code>src/commonMain/sqldelight/</code>. SQLDelight lit ces fichiers et génère le code Kotlin correspondant à chaque build.</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="concept-icon icon-mint">⚡</div>
+        <h3>Requêtes nommées</h3>
+        <p>Chaque requête SQL dans ton fichier .sq a un nom : <code>selectAll:</code> ou <code>insertUser:</code>. SQLDelight génère une fonction Kotlin avec ce même nom dans une classe <code>UserQueries</code>. C'est le cœur du système.</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="concept-icon icon-pink">🔒</div>
+        <h3>Type safety à la compilation</h3>
+        <p>Si tu écris <code>SELECT * FROM Ussser</code> (faute de frappe), SQLDelight te crie dessus au moment du build — pas au runtime. Plus de NullPointerException sur ta base de données en production.</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="concept-icon icon-amber">🔄</div>
+        <h3>Drivers interchangeables</h3>
+        <p>SQLDelight utilise un <em>driver</em> qui est la couche native. Android = <code>AndroidSqliteDriver</code>, iOS = <code>NativeSqliteDriver</code>, Tests = <code>JdbcSqliteDriver</code>. Ton code SQL commun ne change pas.</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="concept-icon icon-purple">📡</div>
+        <h3>Reactive avec Flow</h3>
+        <p>Les requêtes retournent des <code>Query&lt;T&gt;</code> que tu peux convertir en <code>Flow&lt;List&lt;T&gt;&gt;</code> via les extensions <code>asFlow().mapToList()</code>. Ta UI se met à jour automatiquement quand la base change.</p>
+      </div>
+      <div class="concept-card reveal">
+        <div class="concept-icon icon-mint">🛠️</div>
+        <h3>Migrations .sqm</h3>
+        <p>Pour modifier ton schéma entre versions, crée des fichiers <code>1.sqm</code>, <code>2.sqm</code>… SQLDelight applique les migrations dans l'ordre. Tu peux aussi tester automatiquement que tes migrations sont cohérentes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SETUP ────────────────────────────── -->
+<section id="setup">
+  <div class="container">
+    <p class="section-label reveal">Installation</p>
+    <h2 class="section-title reveal">Mise en place pas à pas</h2>
+    <p class="section-sub reveal">Pour un projet Android pur ou KMP. Chaque étape est expliquée.</p>
+    <div class="steps">
+
+      <!-- Étape 1 -->
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Ajouter le plugin SQLDelight</h3>
+          <p>Dans ton <strong>build.gradle.kts</strong> de niveau projet. Ce plugin ajoute la tâche de génération de code.</p>
+          <div class="code-card">
+            <div class="code-header">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+              <span class="code-filename">build.gradle.kts (projet)</span>
+            </div>
+            <div class="code-body">
+<pre><span class="var">plugins</span> {
+  <span class="cmt">// Dans le bloc plugins root</span>
+  id(<span class="str">"app.cash.sqldelight"</span>) version <span class="str">"2.0.2"</span> apply <span class="kw">false</span>
+}</pre>
+            </div>
+          </div>
+          <div class="annot">
+            <div class="annot-num">i</div>
+            <p>Le <strong>apply false</strong> signifie que le plugin est déclaré mais pas encore appliqué ici — il sera appliqué dans le module qui en a besoin (app/ ou shared/).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 2 -->
+      <div class="step reveal">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Configurer le module app</h3>
+          <p>Dans ton <strong>build.gradle.kts</strong> du module <code>app</code> (ou <code>shared</code> pour KMP).</p>
+          <div class="code-card">
+            <div class="code-header">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+              <span class="code-filename">app/build.gradle.kts</span>
+            </div>
+            <div class="code-body">
+<pre><span class="var">plugins</span> {
+  id(<span class="str">"app.cash.sqldelight"</span>) <span class="cmt">// ① Appliquer le plugin</span>
+}
+
+<span class="var">sqldelight</span> {
+  <span class="var">databases</span> {
+    create(<span class="str">"AppDatabase"</span>) { <span class="cmt">// ② Nom de ta database</span>
+      <span class="var">packageName</span>.set(<span class="str">"com.example.db"</span>) <span class="cmt">// ③ Package généré</span>
+    }
+  }
+}
+
+<span class="var">dependencies</span> {
+  <span class="cmt">// ④ Driver Android</span>
+  implementation(<span class="str">"app.cash.sqldelight:android-driver:2.0.2"</span>)
+  <span class="cmt">// Extensions coroutines/Flow (optionnel mais recommandé)</span>
+  implementation(<span class="str">"app.cash.sqldelight:coroutines-extensions:2.0.2"</span>)
+}</pre>
+            </div>
+          </div>
+          <div class="annot">
+            <div class="annot-num">①</div>
+            <p><strong>Appliquer le plugin</strong> dans ce module pour activer la génération de code.</p>
+          </div>
+          <div class="annot">
+            <div class="annot-num">②</div>
+            <p><strong>AppDatabase</strong> est le nom de la classe générée. SQLDelight créera <code>AppDatabase.kt</code> avec toutes tes queries.</p>
+          </div>
+          <div class="annot">
+            <div class="annot-num">③</div>
+            <p><strong>packageName</strong> : le package Java/Kotlin où seront placés les fichiers générés.</p>
+          </div>
+          <div class="annot">
+            <div class="annot-num">④</div>
+            <p><strong>android-driver</strong> encapsule la SQLite native d'Android. Sur iOS tu utiliseras <code>native-driver</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 3 -->
+      <div class="step reveal">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Créer ton premier fichier .sq</h3>
+          <p>Crée le dossier <code>src/main/sqldelight/com/example/db/</code> et ton premier fichier.</p>
+          <div class="code-card">
+            <div class="code-header">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+              <span class="code-filename">Todo.sq</span>
+            </div>
+            <div class="code-body">
+<pre><span class="cmt">-- 1. Définir la table</span>
+<span class="kw">CREATE TABLE</span> Todo (
+  id        <span class="typ">INTEGER</span> <span class="kw">NOT NULL PRIMARY KEY AUTOINCREMENT</span>,
+  title     <span class="typ">TEXT</span>    <span class="kw">NOT NULL</span>,
+  isDone    <span class="typ">INTEGER</span> <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span>
+);
+
+<span class="cmt">-- 2. Requête nommée : récupère tout</span>
+<span class="fn">selectAll</span>:
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> Todo;
+
+<span class="cmt">-- 3. Insertion avec paramètres nommés</span>
+<span class="fn">insertTodo</span>:
+<span class="kw">INSERT INTO</span> Todo(title, isDone)
+<span class="kw">VALUES</span> (?, <span class="num">0</span>);
+
+<span class="cmt">-- 4. Mise à jour ciblée par id</span>
+<span class="fn">markDone</span>:
+<span class="kw">UPDATE</span> Todo <span class="kw">SET</span> isDone = <span class="num">1</span>
+<span class="kw">WHERE</span> id = ?;
+
+<span class="cmt">-- 5. Suppression</span>
+<span class="fn">deleteTodo</span>:
+<span class="kw">DELETE FROM</span> Todo <span class="kw">WHERE</span> id = ?;</pre>
+            </div>
+          </div>
+          <div class="annot">
+            <div class="annot-num">2</div>
+            <p>Le nom <strong>selectAll:</strong> (avec deux-points) indique à SQLDelight de générer une fonction <code>selectAll()</code> dans <code>TodoQueries</code>.</p>
+          </div>
+          <div class="annot">
+            <div class="annot-num">3</div>
+            <p>Le <strong>?</strong> est un paramètre positionnel. SQLDelight génère une fonction <code>insertTodo(title: String)</code> — typée automatiquement depuis le schéma.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 4 -->
+      <div class="step reveal">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Initialiser la base dans ton code</h3>
+          <p>Crée l'instance <code>AppDatabase</code> une seule fois (singleton via DI ou companion object).</p>
+          <div class="code-card">
+            <div class="code-header">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+              <span class="code-filename">DatabaseHelper.kt</span>
+            </div>
+            <div class="code-body">
+<pre><span class="kw">import</span> <span class="var">app.cash.sqldelight.driver.android.AndroidSqliteDriver</span>
+<span class="kw">import</span> <span class="var">com.example.db.AppDatabase</span>
+
+<span class="kw">fun</span> <span class="fn">createDatabase</span>(context: <span class="typ">Context</span>): <span class="typ">AppDatabase</span> {
+  <span class="cmt">// ① Créer le driver Android</span>
+  <span class="kw">val</span> <span class="var">driver</span> = <span class="fn">AndroidSqliteDriver</span>(
+    schema   = <span class="typ">AppDatabase</span>.Schema, <span class="cmt">// ② Schema généré</span>
+    context  = context,
+    name     = <span class="str">"todos.db"</span>         <span class="cmt">// ③ Nom du fichier .db</span>
+  )
+  <span class="cmt">// ④ Retourner l'instance de la DB</span>
+  <span class="kw">return</span> <span class="typ">AppDatabase</span>(<span class="var">driver</span>)
+}</pre>
+            </div>
+          </div>
+          <div class="annot">
+            <div class="annot-num">②</div>
+            <p><strong>AppDatabase.Schema</strong> contient la version de ta DB et les méthodes de création/migration. SQLDelight le génère automatiquement depuis tes fichiers .sq.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── QUERIES ──────────────────────────── -->
+<section id="queries">
+  <div class="container">
+    <p class="section-label reveal">Requêtes</p>
+    <h2 class="section-title reveal">Utiliser les requêtes générées</h2>
+    <p class="section-sub reveal">SQLDelight génère des fonctions Kotlin idiomatiques pour chaque requête nommée.</p>
+
+    <div class="queries-grid">
+
+      <div class="reveal">
+        <h3 style="font-family:'Syne';font-weight:700;margin-bottom:0.75rem;color:var(--accent3);">Lecture de données</h3>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span class="code-filename">Repository.kt</span>
+          </div>
+          <div class="code-body">
+<pre><span class="kw">val</span> <span class="var">queries</span> = db.todoQueries
+
+<span class="cmt">// Liste complète</span>
+<span class="kw">val</span> <span class="var">todos</span>: <span class="typ">List</span>&lt;<span class="typ">Todo</span>&gt; = <span class="var">queries</span>
+  .<span class="fn">selectAll</span>()
+  .<span class="fn">executeAsList</span>()
+
+<span class="cmt">// Un seul résultat (nullable)</span>
+<span class="kw">val</span> <span class="var">one</span>: <span class="typ">Todo</span>? = <span class="var">queries</span>
+  .<span class="fn">selectById</span>(<span class="var">id</span> = <span class="num">1</span>)
+  .<span class="fn">executeAsOneOrNull</span>()
+
+<span class="cmt">// Avec Flow (reactive)</span>
+<span class="kw">val</span> <span class="var">flow</span>: <span class="typ">Flow</span>&lt;<span class="typ">List</span>&lt;<span class="typ">Todo</span>&gt;&gt; = <span class="var">queries</span>
+  .<span class="fn">selectAll</span>()
+  .<span class="fn">asFlow</span>()
+  .<span class="fn">mapToList</span>(<span class="typ">Dispatchers</span>.IO)</pre>
+          </div>
+        </div>
+        <div class="annot">
+          <div class="annot-num">i</div>
+          <p><strong>executeAsList()</strong> : requête synchrone → liste. <strong>asFlow().mapToList()</strong> : flux réactif qui se met à jour automatiquement. Utilise le Flow en prod avec un ViewModel.</p>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3 style="font-family:'Syne';font-weight:700;margin-bottom:0.75rem;color:var(--accent3);">Écriture de données</h3>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span class="code-filename">Repository.kt</span>
+          </div>
+          <div class="code-body">
+<pre><span class="cmt">// Insérer</span>
+<span class="var">queries</span>.<span class="fn">insertTodo</span>(title = <span class="str">"Faire les courses"</span>)
+
+<span class="cmt">// Mettre à jour</span>
+<span class="var">queries</span>.<span class="fn">markDone</span>(<span class="var">id</span> = <span class="num">1</span>)
+
+<span class="cmt">// Supprimer</span>
+<span class="var">queries</span>.<span class="fn">deleteTodo</span>(<span class="var">id</span> = <span class="num">1</span>)
+
+<span class="cmt">// Transaction (atomique)</span>
+<span class="var">db</span>.<span class="fn">transaction</span> {
+  <span class="var">queries</span>.<span class="fn">insertTodo</span>(<span class="str">"Tâche A"</span>)
+  <span class="var">queries</span>.<span class="fn">insertTodo</span>(<span class="str">"Tâche B"</span>)
+  <span class="cmt">// Si une ligne échoue, tout rollback</span>
+}
+
+<span class="cmt">// Dans une coroutine</span>
+<span class="kw">withContext</span>(<span class="typ">Dispatchers</span>.IO) {
+  <span class="var">queries</span>.<span class="fn">insertTodo</span>(<span class="str">"Async insert"</span>)
+}</pre>
+          </div>
+        </div>
+        <div class="annot">
+          <div class="annot-num">i</div>
+          <p>Les <strong>transactions</strong> garantissent l'atomicité : soit toutes les opérations réussissent, soit aucune n'est appliquée. Toujours faire les écritures sur <strong>Dispatchers.IO</strong>.</p>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3 style="font-family:'Syne';font-weight:700;margin-bottom:0.75rem;color:var(--accent3);">Requêtes avec mapping custom</h3>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span class="code-filename">Todo.sq</span>
+          </div>
+          <div class="code-body">
+<pre><span class="cmt">-- Requête avec JOIN et colonnes ciblées</span>
+<span class="fn">selectWithUser</span>:
+<span class="kw">SELECT</span>
+  t.id,
+  t.title,
+  u.username <span class="kw">AS</span> ownerName
+<span class="kw">FROM</span> Todo t
+<span class="kw">JOIN</span> User u <span class="kw">ON</span> t.userId = u.id;
+
+<span class="cmt">-- Filtrage dynamique</span>
+<span class="fn">selectByStatus</span>:
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> Todo
+<span class="kw">WHERE</span> isDone = :isDone;
+<span class="cmt">-- Génère: selectByStatus(isDone: Long)</span></pre>
+          </div>
+        </div>
+        <div class="annot">
+          <div class="annot-num">i</div>
+          <p>La notation <strong>:isDone</strong> (avec deux-points) crée un paramètre nommé. SQLDelight génère <code>selectByStatus(isDone: Long)</code>. Le type est inféré depuis le schéma.</p>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <h3 style="font-family:'Syne';font-weight:700;margin-bottom:0.75rem;color:var(--accent3);">Types personnalisés (adapters)</h3>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span class="code-filename">Todo.sq + AppDatabase.kt</span>
+          </div>
+          <div class="code-body">
+<pre><span class="cmt">-- Dans .sq : stocker une enum comme TEXT</span>
+<span class="kw">CREATE TABLE</span> Todo (
+  id       <span class="typ">INTEGER</span> <span class="kw">NOT NULL PRIMARY KEY</span>,
+  priority <span class="typ">TEXT</span> <span class="kw">AS</span> <span class="ann">Priority</span> <span class="kw">NOT NULL</span>
+);
+
+<span class="cmt">// Dans Kotlin : créer l'adapter</span>
+<span class="kw">val</span> <span class="var">adapter</span> = <span class="typ">Todo</span>.<span class="fn">Adapter</span>(
+  priorityAdapter = <span class="fn">EnumColumnAdapter</span>()
+)
+<span class="kw">val</span> <span class="var">db</span> = <span class="typ">AppDatabase</span>(<span class="var">driver</span>, <span class="var">adapter</span>)
+<span class="cmt">// priority est maintenant Priority, pas String</span></pre>
+          </div>
+        </div>
+        <div class="annot">
+          <div class="annot-num">i</div>
+          <p>Avec <strong>AS Priority</strong> dans le .sq, SQLDelight sait que la colonne TEXT doit être mappée au type Kotlin <code>Priority</code>. Tu fournis l'adapter qui sait (dé)sérialiser.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── PLATFORMS ───────────────────────── -->
+<section id="platforms">
+  <div class="container">
+    <p class="section-label reveal">KMP</p>
+    <h2 class="section-title reveal">Support multiplateforme</h2>
+    <p class="section-sub reveal">Le même code SQL, différents drivers. La magie de Kotlin Multiplatform.</p>
+    <div class="platforms-wrap reveal">
+      <div class="platform-card">
+        <div class="platform-icon">🤖</div>
+        <h4>Android</h4>
+        <p>Utilise SQLite intégré à Android via AndroidSqliteDriver</p>
+        <span class="platform-badge">android-driver</span>
+      </div>
+      <div class="platform-card">
+        <div class="platform-icon">🍎</div>
+        <h4>iOS</h4>
+        <p>SQLite natif via NativeSqliteDriver. Aucune dépendance externe</p>
+        <span class="platform-badge">native-driver</span>
+      </div>
+      <div class="platform-card">
+        <div class="platform-icon">🖥️</div>
+        <h4>Desktop (JVM)</h4>
+        <p>SQLite via JDBC. Idéal pour les apps Compose Desktop</p>
+        <span class="platform-badge">sqlite-driver</span>
+      </div>
+      <div class="platform-card">
+        <div class="platform-icon">🌐</div>
+        <h4>Web / JS</h4>
+        <p>SQLite.js ou Web SQL. Encore en développement actif</p>
+        <span class="platform-badge">web-worker-driver</span>
+      </div>
+      <div class="platform-card">
+        <div class="platform-icon">🧪</div>
+        <h4>Tests</h4>
+        <p>JdbcSqliteDriver en mémoire pour des tests rapides et isolés</p>
+        <span class="platform-badge">in-memory</span>
+      </div>
+    </div>
+
+    <div style="margin-top:3rem;" class="reveal">
+      <h3 style="font-family:'Syne';font-weight:700;font-size:1.15rem;margin-bottom:1rem;color:var(--text);">Pattern KMP : expect/actual pour le driver</h3>
+      <div class="queries-grid">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span class="code-filename">commonMain/DatabaseFactory.kt</span>
+          </div>
+          <div class="code-body">
+<pre><span class="cmt">// Code commun — pas de driver ici</span>
+<span class="kw">expect fun</span> <span class="fn">createDriver</span>(): <span class="typ">SqlDriver</span>
+
+<span class="kw">fun</span> <span class="fn">createDatabase</span>(): <span class="typ">AppDatabase</span> {
+  <span class="kw">return</span> <span class="typ">AppDatabase</span>(<span class="fn">createDriver</span>())
+}</pre>
+          </div>
+        </div>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span class="code-filename">androidMain/DatabaseFactory.kt</span>
+          </div>
+          <div class="code-body">
+<pre><span class="cmt">// Implémentation Android</span>
+<span class="kw">actual fun</span> <span class="fn">createDriver</span>(): <span class="typ">SqlDriver</span> {
+  <span class="kw">return</span> <span class="fn">AndroidSqliteDriver</span>(
+    schema  = <span class="typ">AppDatabase</span>.Schema,
+    context = applicationContext,
+    name    = <span class="str">"app.db"</span>
+  )
+}
+
+<span class="cmt">// iosMain/DatabaseFactory.kt</span>
+<span class="kw">actual fun</span> <span class="fn">createDriver</span>(): <span class="typ">SqlDriver</span> {
+  <span class="kw">return</span> <span class="fn">NativeSqliteDriver</span>(
+    schema = <span class="typ">AppDatabase</span>.Schema,
+    name   = <span class="str">"app.db"</span>
+  )
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FULL EXAMPLE ─────────────────────── -->
+<section id="example">
+  <div class="container">
+    <p class="section-label reveal">Projet complet</p>
+    <h2 class="section-title reveal">Application Todo — de bout en bout</h2>
+    <p class="section-sub reveal">Un exemple complet avec Architecture Clean, ViewModel et Flow. Copie-colle et adapte.</p>
+
+    <div class="example-wrap reveal">
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab(event,'t1')">Todo.sq</button>
+        <button class="tab-btn" onclick="switchTab(event,'t2')">Repository</button>
+        <button class="tab-btn" onclick="switchTab(event,'t3')">ViewModel</button>
+        <button class="tab-btn" onclick="switchTab(event,'t4')">UI (Compose)</button>
+        <button class="tab-btn" onclick="switchTab(event,'t5')">Tests</button>
+      </div>
+
+      <div id="t1" class="tab-panel active">
+        <div class="code-card" style="border-top-left-radius:0;border-top-right-radius:0;">
+          <div class="code-body">
+<pre><span class="cmt">-- ============================================
+-- Todo.sq — Schéma et requêtes complets
+-- ============================================</span>
+
+<span class="kw">CREATE TABLE</span> Todo (
+  id        <span class="typ">INTEGER</span> <span class="kw">NOT NULL PRIMARY KEY AUTOINCREMENT</span>,
+  title     <span class="typ">TEXT</span>    <span class="kw">NOT NULL</span>,
+  isDone    <span class="typ">INTEGER</span> <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span>,
+  createdAt <span class="typ">INTEGER</span> <span class="kw">NOT NULL</span>
+);
+
+<span class="fn">selectAll</span>:
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> Todo <span class="kw">ORDER BY</span> createdAt <span class="kw">DESC</span>;
+
+<span class="fn">selectById</span>:
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> Todo <span class="kw">WHERE</span> id = :id;
+
+<span class="fn">selectByStatus</span>:
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> Todo <span class="kw">WHERE</span> isDone = :isDone;
+
+<span class="fn">countAll</span>:
+<span class="kw">SELECT COUNT</span>(<span class="op">*</span>) <span class="kw">FROM</span> Todo;
+
+<span class="fn">insertTodo</span>:
+<span class="kw">INSERT INTO</span> Todo(title, isDone, createdAt)
+<span class="kw">VALUES</span> (:title, <span class="num">0</span>, :createdAt);
+
+<span class="fn">markDone</span>:
+<span class="kw">UPDATE</span> Todo <span class="kw">SET</span> isDone = <span class="num">1</span> <span class="kw">WHERE</span> id = :id;
+
+<span class="fn">markUndone</span>:
+<span class="kw">UPDATE</span> Todo <span class="kw">SET</span> isDone = <span class="num">0</span> <span class="kw">WHERE</span> id = :id;
+
+<span class="fn">updateTitle</span>:
+<span class="kw">UPDATE</span> Todo <span class="kw">SET</span> title = :title <span class="kw">WHERE</span> id = :id;
+
+<span class="fn">deleteTodo</span>:
+<span class="kw">DELETE FROM</span> Todo <span class="kw">WHERE</span> id = :id;
+
+<span class="fn">deleteAll</span>:
+<span class="kw">DELETE FROM</span> Todo;</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="t2" class="tab-panel">
+        <div class="code-card" style="border-top-left-radius:0;border-top-right-radius:0;">
+          <div class="code-body">
+<pre><span class="cmt">// TodoRepository.kt</span>
+<span class="kw">class</span> <span class="typ">TodoRepository</span>(
+  <span class="kw">private val</span> <span class="var">queries</span>: <span class="typ">TodoQueries</span>
+) {
+  <span class="cmt">// Flow réactif — se met à jour automatiquement</span>
+  <span class="kw">val</span> <span class="var">allTodos</span>: <span class="typ">Flow</span>&lt;<span class="typ">List</span>&lt;<span class="typ">Todo</span>&gt;&gt; = <span class="var">queries</span>
+    .<span class="fn">selectAll</span>()
+    .<span class="fn">asFlow</span>()
+    .<span class="fn">mapToList</span>(<span class="typ">Dispatchers</span>.IO)
+
+  <span class="kw">suspend fun</span> <span class="fn">addTodo</span>(title: <span class="typ">String</span>) {
+    <span class="fn">withContext</span>(<span class="typ">Dispatchers</span>.IO) {
+      <span class="var">queries</span>.<span class="fn">insertTodo</span>(
+        title     = title,
+        createdAt = <span class="typ">System</span>.<span class="fn">currentTimeMillis</span>()
+      )
+    }
+  }
+
+  <span class="kw">suspend fun</span> <span class="fn">toggle</span>(todo: <span class="typ">Todo</span>) {
+    <span class="fn">withContext</span>(<span class="typ">Dispatchers</span>.IO) {
+      <span class="kw">if</span> (todo.isDone == <span class="num">1L</span>)
+        <span class="var">queries</span>.<span class="fn">markUndone</span>(todo.id)
+      <span class="kw">else</span>
+        <span class="var">queries</span>.<span class="fn">markDone</span>(todo.id)
+    }
+  }
+
+  <span class="kw">suspend fun</span> <span class="fn">delete</span>(id: <span class="typ">Long</span>) {
+    <span class="fn">withContext</span>(<span class="typ">Dispatchers</span>.IO) {
+      <span class="var">queries</span>.<span class="fn">deleteTodo</span>(id)
+    }
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="t3" class="tab-panel">
+        <div class="code-card" style="border-top-left-radius:0;border-top-right-radius:0;">
+          <div class="code-body">
+<pre><span class="cmt">// TodoViewModel.kt</span>
+<span class="kw">class</span> <span class="typ">TodoViewModel</span>(
+  <span class="kw">private val</span> <span class="var">repo</span>: <span class="typ">TodoRepository</span>
+) : <span class="typ">ViewModel</span>() {
+
+  <span class="cmt">// StateFlow exposé à l'UI — jamais la DB directement</span>
+  <span class="kw">val</span> <span class="var">uiState</span>: <span class="typ">StateFlow</span>&lt;<span class="typ">TodoUiState</span>&gt; = <span class="var">repo</span>.<span class="var">allTodos</span>
+    .<span class="fn">map</span> { todos -&gt; <span class="typ">TodoUiState</span>(todos = todos) }
+    .<span class="fn">stateIn</span>(
+      scope            = viewModelScope,
+      started          = <span class="typ">SharingStarted</span>.WhileSubscribed(<span class="num">5000</span>),
+      initialValue     = <span class="typ">TodoUiState</span>()
+    )
+
+  <span class="kw">fun</span> <span class="fn">addTodo</span>(title: <span class="typ">String</span>) {
+    <span class="kw">if</span> (title.<span class="fn">isBlank</span>()) <span class="kw">return</span>
+    viewModelScope.<span class="fn">launch</span> {
+      <span class="var">repo</span>.<span class="fn">addTodo</span>(title.<span class="fn">trim</span>())
+    }
+  }
+
+  <span class="kw">fun</span> <span class="fn">toggle</span>(todo: <span class="typ">Todo</span>) {
+    viewModelScope.<span class="fn">launch</span> { <span class="var">repo</span>.<span class="fn">toggle</span>(todo) }
+  }
+
+  <span class="kw">fun</span> <span class="fn">delete</span>(id: <span class="typ">Long</span>) {
+    viewModelScope.<span class="fn">launch</span> { <span class="var">repo</span>.<span class="fn">delete</span>(id) }
+  }
+}
+
+<span class="kw">data class</span> <span class="typ">TodoUiState</span>(
+  <span class="kw">val</span> <span class="var">todos</span>: <span class="typ">List</span>&lt;<span class="typ">Todo</span>&gt; = <span class="fn">emptyList</span>()
+)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="t4" class="tab-panel">
+        <div class="code-card" style="border-top-left-radius:0;border-top-right-radius:0;">
+          <div class="code-body">
+<pre><span class="cmt">// TodoScreen.kt — Compose UI</span>
+<span class="ann">@Composable</span>
+<span class="kw">fun</span> <span class="fn">TodoScreen</span>(vm: <span class="typ">TodoViewModel</span> = <span class="fn">viewModel</span>()) {
+  <span class="kw">val</span> <span class="var">state</span> <span class="kw">by</span> vm.<span class="var">uiState</span>.<span class="fn">collectAsStateWithLifecycle</span>()
+  <span class="kw">var</span> <span class="var">text</span> <span class="kw">by</span> <span class="fn">remember</span> { <span class="fn">mutableStateOf</span>(<span class="str">""</span>) }
+
+  <span class="typ">Column</span>(modifier = <span class="typ">Modifier</span>.<span class="fn">fillMaxSize</span>().<span class="fn">padding</span>(<span class="num">16</span>.dp)) {
+
+    <span class="cmt">// Champ de saisie</span>
+    <span class="typ">Row</span>(modifier = <span class="typ">Modifier</span>.<span class="fn">fillMaxWidth</span>()) {
+      <span class="typ">TextField</span>(
+        value         = text,
+        onValueChange = { text = it },
+        modifier      = <span class="typ">Modifier</span>.<span class="fn">weight</span>(<span class="num">1f</span>)
+      )
+      <span class="typ">Button</span>(onClick = { vm.<span class="fn">addTodo</span>(text); text = <span class="str">""</span> }) {
+        <span class="typ">Text</span>(<span class="str">"Ajouter"</span>)
+      }
+    }
+
+    <span class="cmt">// Liste des todos</span>
+    <span class="typ">LazyColumn</span> {
+      <span class="fn">items</span>(state.todos) { todo ->
+        <span class="typ">TodoItem</span>(
+          todo     = todo,
+          onToggle = { vm.<span class="fn">toggle</span>(todo) },
+          onDelete = { vm.<span class="fn">delete</span>(todo.id) }
+        )
+      }
+    }
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="t5" class="tab-panel">
+        <div class="code-card" style="border-top-left-radius:0;border-top-right-radius:0;">
+          <div class="code-body">
+<pre><span class="cmt">// TodoRepositoryTest.kt</span>
+<span class="kw">class</span> <span class="typ">TodoRepositoryTest</span> {
+
+  <span class="kw">private lateinit var</span> <span class="var">db</span>: <span class="typ">AppDatabase</span>
+  <span class="kw">private lateinit var</span> <span class="var">repo</span>: <span class="typ">TodoRepository</span>
+
+  <span class="ann">@Before</span>
+  <span class="kw">fun</span> <span class="fn">setup</span>() {
+    <span class="cmt">// Driver en mémoire pour les tests — rapide !</span>
+    <span class="kw">val</span> <span class="var">driver</span> = <span class="typ">JdbcSqliteDriver</span>(<span class="typ">JdbcSqliteDriver</span>.IN_MEMORY)
+    <span class="typ">AppDatabase</span>.Schema.<span class="fn">create</span>(driver) <span class="cmt">// Créer le schéma</span>
+    <span class="var">db</span>   = <span class="typ">AppDatabase</span>(driver)
+    <span class="var">repo</span> = <span class="typ">TodoRepository</span>(db.todoQueries)
+  }
+
+  <span class="ann">@Test</span>
+  <span class="kw">fun</span> <span class="fn">`add todo then retrieve it`</span>() = <span class="fn">runTest</span> {
+    <span class="var">repo</span>.<span class="fn">addTodo</span>(<span class="str">"Apprendre SQLDelight"</span>)
+
+    <span class="kw">val</span> <span class="var">todos</span> = db.todoQueries.<span class="fn">selectAll</span>().<span class="fn">executeAsList</span>()
+
+    <span class="fn">assertEquals</span>(<span class="num">1</span>, todos.size)
+    <span class="fn">assertEquals</span>(<span class="str">"Apprendre SQLDelight"</span>, todos.<span class="fn">first</span>().title)
+    <span class="fn">assertEquals</span>(<span class="num">0L</span>, todos.<span class="fn">first</span>().isDone)
+  }
+
+  <span class="ann">@Test</span>
+  <span class="kw">fun</span> <span class="fn">`toggle marks as done`</span>() = <span class="fn">runTest</span> {
+    <span class="var">repo</span>.<span class="fn">addTodo</span>(<span class="str">"Test"</span>)
+    <span class="kw">val</span> <span class="var">todo</span> = db.todoQueries.<span class="fn">selectAll</span>().<span class="fn">executeAsList</span>().<span class="fn">first</span>()
+    <span class="var">repo</span>.<span class="fn">toggle</span>(todo)
+
+    <span class="kw">val</span> <span class="var">updated</span> = db.todoQueries.<span class="fn">selectById</span>(todo.id).<span class="fn">executeAsOne</span>()
+    <span class="fn">assertEquals</span>(<span class="num">1L</span>, updated.isDone)
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ──────────────────────────────── -->
+<section id="faq">
+  <div class="container">
+    <p class="section-label reveal">FAQ</p>
+    <h2 class="section-title reveal">Questions fréquentes</h2>
+    <div class="faq-list">
+
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Où est générée le code Kotlin ?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">
+          Le code généré se trouve dans <code>build/generated/sqldelight/</code>. Tu ne dois jamais modifier ces fichiers — ils sont régénérés à chaque build. Si tu changes ton fichier .sq, relance simplement le build avec <code>./gradlew generateCommonMainAppDatabaseInterface</code> ou appuie sur "Build" dans Android Studio.
+        </div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Comment gérer les migrations de schéma ?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">
+          Crée des fichiers <code>1.sqm</code>, <code>2.sqm</code> dans le dossier <code>migrations/</code>. Chaque fichier correspond à une version de la DB. Par exemple, <code>1.sqm</code> contient les ALTER TABLE pour passer de la version 1 à la version 2. SQLDelight applique automatiquement les migrations dans l'ordre lors de l'ouverture de la DB. Tu peux tester la cohérence des migrations avec <code>verifyMigrations = true</code> dans la config.
+        </div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          SQLDelight supporte-t-il les requêtes IN (liste) ?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">
+          Oui ! Utilise <code>SELECT * FROM Todo WHERE id IN ?</code> avec un paramètre de type <code>Collection&lt;Long&gt;</code>. SQLDelight génère la bonne requête SQL avec autant de placeholders que nécessaire. Exemple : <code>queries.selectByIds(listOf(1L, 2L, 3L))</code>.
+        </div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Puis-je utiliser SQLDelight avec Hilt / Koin ?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">
+          Absolument. Crée un module Hilt ou Koin qui expose <code>AppDatabase</code> en singleton, puis expose chaque <code>XxxQueries</code> séparément. Tes repositories injectent directement les Queries. C'est d'ailleurs la bonne pratique recommandée dans l'architecture Android moderne.
+        </div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          SQLDelight vs Room : lequel choisir ?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">
+          Projet purement Android sans partage de code ? Room est parfaitement adapté et mieux intégré à l'écosystème Jetpack. Projet Kotlin Multiplatform où tu veux partager la couche data entre Android et iOS ? SQLDelight est incontournable. SQLDelight a aussi l'avantage de forcer à écrire du "vrai" SQL, ce qui est utile si tu veux rester proche du moteur de base de données.
+        </div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          SQLDelight supporte-t-il les bases chiffrées ?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">
+          Oui, via SQLCipher. Il existe un driver <code>sqlcipher-driver</code> pour Android qui remplace <code>AndroidSqliteDriver</code>. Tu fournis la clé de chiffrement lors de l'initialisation du driver. La configuration du .sq reste identique — seul le driver change.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ──────────────────────────────── -->
+<section id="cta">
+  <div class="container">
+    <h2 class="reveal">Prêt à te lancer ?</h2>
+    <p class="reveal">SQLDelight te donne des bases de données sûres, réactives et multiplateforme. Commence avec le guide officiel ou clone un starter KMP.</p>
+    <div class="hero-btns reveal" style="justify-content:center;">
+      <a href="https://cashapp.github.io/sqldelight/" target="_blank" class="btn-primary">Documentation officielle ↗</a>
+      <a href="https://github.com/cashapp/sqldelight" target="_blank" class="btn-ghost">GitHub ↗</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ───────────────────────────── -->
+<footer>
+  <p>SQLDelight est un projet open-source de <a href="https://github.com/cashapp/sqldelight" target="_blank">Cash App / Square</a>. Ce guide est indépendant et non officiel.</p>
+</footer>
+
+<script>
+// FAQ toggle
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  item.classList.toggle('open');
+}
+
+// Tabs
+function switchTab(e, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+reveals.forEach(r => io.observe(r));
+</script>
+</body>
+</html>
